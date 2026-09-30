@@ -2,46 +2,103 @@
 
 # 1. Latar Belakang Masalah
 
-Bendahara kelas perlu mencatat tabungan atau iuran siswa, pemasukan lain, dan pengeluaran kelas. XI RPL memiliki 36 siswa dengan target awal Rp20.000 per siswa, sehingga target keseluruhan Rp720.000.
+ClassWallet awalnya digunakan untuk satu kelas. Sekarang sistem dikembangkan menjadi **skala sekolah** agar setiap kelas memiliki pencatatan keuangan sendiri tetapi tetap bisa dipantau oleh Admin Sekolah.
 
-Jika pembayaran dicatat di buku, chat, atau spreadsheet, bendahara harus menghitung total uang, kekurangan setiap siswa, status lunas, dan saldo kelas secara manual. Bukti pembayaran juga bisa terpisah dari catatan transaksi. Siswa harus bertanya kepada bendahara untuk mengetahui jumlah yang sudah dibayar.
+Sistem menggunakan **Next.js** sebagai frontend dan **Supabase** sebagai database, autentikasi, serta penyimpanan file.
 
-# 2. Alur yang Ada Saat Ini
+# 2. Alur yang Diinginkan
 
-1. Siswa menyerahkan uang atau mengirim bukti pembayaran kepada bendahara.
-2. Bendahara mencatat nama siswa, tanggal, dan nominal pembayaran.
-3. Bendahara menjumlahkan pembayaran setiap siswa dan membandingkannya dengan target.
-4. Bendahara mencatat pemasukan tambahan serta pengeluaran, lalu menghitung saldo kelas.
-5. Saat membuat laporan, bendahara memeriksa dan menyusun ulang seluruh catatan.
-6. Siswa bertanya kepada bendahara jika ingin mengetahui status atau riwayat pembayarannya.
+1. Admin Sekolah login ke ClassWallet.
+2. Admin membuat akun Bendahara untuk setiap kelas.
+3. Bendahara login dan hanya mengelola data kelasnya sendiri.
+4. Bendahara mencatat pembayaran siswa, pemasukan, pengeluaran, dan bukti pembayaran.
+5. Sistem menghitung saldo, kekurangan, serta status LUNAS/BELUM LUNAS otomatis.
+6. Siswa dapat melihat pembayaran miliknya sendiri.
+7. Admin Sekolah dapat melihat laporan dari seluruh kelas.
 
-# 3. Alur yang Diinginkan
+# 3. Pengguna Sistem
 
-1. Bendahara masuk ke aplikasi ClassWallet sebagai Admin.
-2. Admin mengelola data siswa dan menentukan target pembayaran.
-3. Ketika siswa membayar, Admin mencatat nama siswa, nominal, tanggal, jenis, metode, catatan, serta bukti pembayaran jika ada.
-4. Sistem otomatis menghitung total pembayaran siswa, kekurangan, status LUNAS atau BELUM LUNAS, pemasukan, dan saldo kelas.
-5. Admin mencatat pemasukan tambahan dan pengeluaran pada menu masing-masing.
-6. Admin melihat ringkasan pada dashboard serta membuat laporan berdasarkan periode.
-7. Siswa masuk sebagai Anggota untuk melihat tabungan, status, riwayat transaksi, dan bukti miliknya sendiri.
+# Admin Sekolah
 
-# 4. Tujuan Bisnis
+Admin dapat:
 
-- Mempermudah bendahara mencatat seluruh transaksi keuangan kelas.
-- Mengurangi kesalahan perhitungan saldo dan status pembayaran.
-- Membuat setiap transaksi mudah ditelusuri melalui tanggal, nominal, pencatat, dan bukti.
-- Memberi siswa akses untuk memantau tabungannya sendiri.
-- Mempercepat pembuatan laporan keuangan kelas.
+- Mengelola seluruh kelas.
+- Membuat akun Bendahara.
+- Melihat seluruh siswa dan transaksi.
+- Melihat laporan setiap kelas.
+- Melihat laporan seluruh sekolah.
 
-# 5. Aturan Bisnis
+# Bendahara Kelas
 
-- Status **LUNAS** berlaku jika total pembayaran siswa sama dengan atau melebihi target.
-- Jika pembayaran belum mencapai target, statusnya **BELUM LUNAS** dan sistem menampilkan jumlah kekurangan.
-- Saldo kelas dihitung dari seluruh pemasukan dikurangi seluruh pengeluaran.
-- Pembayaran siswa dihitung sebagai pemasukan kelas sehingga tidak dicatat dua kali.
-- Hanya Admin/Bendahara yang dapat menambah, mengedit, dan menghapus transaksi.
-- Anggota/Siswa hanya dapat melihat data pembayaran miliknya sendiri.
+Bendahara dapat:
 
-# 6. Hasil yang Diharapkan
+- Mengelola siswa kelasnya.
+- Mencatat pembayaran.
+- Mengelola pemasukan dan pengeluaran.
+- Mengunggah bukti.
+- Membuat laporan kelas.
 
-ClassWallet menghasilkan catatan keuangan kelas yang rapi dan mudah diperiksa. Bendahara dapat mengetahui saldo serta status pembayaran siswa tanpa menghitung ulang secara manual. Siswa juga dapat melihat perkembangan tabungannya secara mandiri melalui akun masing-masing.
+Bendahara hanya dapat mengakses kelas yang diberikan kepadanya.
+
+# Siswa
+
+Siswa hanya dapat melihat:
+
+- Total pembayaran.
+- Target.
+- Kekurangan.
+- Status pembayaran.
+- Riwayat dan bukti miliknya sendiri.
+
+# 4. Struktur Kelas
+
+ClassWallet digunakan untuk kelas X, XI, dan XII.
+
+Setiap tingkat memiliki kelas:
+
+- MPLB
+- AKL 1
+- AKL 2
+- BR 1
+- BR 2
+- RPL
+- DKV 1
+- DKV 2
+- Animasi
+
+Total terdapat **27 kelas**.
+
+# 5. Pemisahan Data Kelas
+
+Data setiap kelas dipisahkan menggunakan `class_id`.
+
+Contoh:
+
+- Bendahara XI RPL hanya dapat melihat XI RPL.
+- Bendahara XI DKV 1 hanya dapat melihat XI DKV 1.
+- Admin Sekolah dapat melihat seluruh kelas.
+
+Supabase Row Level Security digunakan untuk mengatur keamanan akses data.
+
+# 6. Tujuan Bisnis
+
+- Mempermudah pengelolaan keuangan seluruh kelas.
+- Mengurangi kesalahan pencatatan.
+- Memisahkan data antar kelas.
+- Mempermudah Bendahara membuat laporan.
+- Mempermudah Admin memantau kondisi keuangan seluruh kelas.
+
+# 7. Aturan Bisnis
+
+- Setiap Bendahara hanya mengelola satu kelas yang diberikan.
+- Siswa hanya dapat melihat datanya sendiri.
+- Pembayaran siswa dihitung sebagai pemasukan kelas.
+- Status LUNAS jika pembayaran mencapai target.
+- Saldo dihitung dari pemasukan dikurangi pengeluaran.
+- Admin Sekolah dapat melihat seluruh laporan.
+
+# 8. Hasil yang Diharapkan
+
+ClassWallet menjadi sistem keuangan kelas terpusat untuk sekolah.
+
+Setiap kelas memiliki data masing-masing, Bendahara dapat mengelola keuangan kelasnya, dan Admin Sekolah dapat memantau laporan seluruh kelas melalui satu aplikasi.
