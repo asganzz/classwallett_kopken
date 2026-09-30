@@ -1,126 +1,164 @@
 # SRS ClassWallet
 
-# 1. Sistem Apa yang Akan Dibangun
+# 1. Sistem yang Akan Dibangun
 
-ClassWallet adalah sistem informasi berbasis web untuk mengelola tabungan siswa, pemasukan, pengeluaran, dan laporan keuangan satu kelas.
+ClassWallet adalah sistem web untuk mengelola tabungan siswa dan keuangan seluruh kelas di sekolah.
 
-Sistem memiliki dua role:
+Sistem memiliki tiga role:
 
-- **Admin/Bendahara:** mengelola seluruh data dan transaksi kelas.
-- **Anggota/Siswa:** melihat data tabungan dan transaksi miliknya sendiri.
+- `super_admin`
+- `treasurer`
+- `student`
 
-# 2. Dengan Apa Sistem Dibangun
+# 2. Teknologi Sistem
 
-- **Backend:** PHP native.
-- **Database:** MySQL.
-- **Koneksi database:** PDO.
-- **Frontend:** HTML, CSS, dan JavaScript.
-- **Web server lokal:** Apache melalui Laragon.
-- **Penyimpanan file:** folder privat untuk bukti pembayaran dan foto profil.
+- **Frontend:** Next.js, React, TypeScript.
+- **Database:** Supabase PostgreSQL.
+- **Authentication:** Supabase Auth.
+- **Storage:** Supabase Storage.
+- **Security:** Row Level Security.
 
-Kode dipisahkan menjadi bagian konfigurasi, controller, tampilan, database, dan folder publik agar mudah dikembangkan.
+# 3. Struktur Akses
 
-# 3. Rancangan Alur Sistem pada Setiap Fitur
+# Super Admin
 
-## Autentikasi
+Dapat mengakses:
 
-1. Pengguna mengirim username/email dan password.
-2. Sistem mencari akun aktif pada database.
-3. Sistem memeriksa password yang tersimpan dalam bentuk hash.
-4. Jika benar, sistem membuat sesi login.
-5. Sistem memeriksa role sebelum membuka setiap halaman yang dilindungi.
+- Seluruh kelas.
+- Seluruh siswa.
+- Bendahara.
+- Transaksi.
+- Pemasukan.
+- Pengeluaran.
+- Laporan.
 
-## Pengelolaan Siswa
+# Bendahara
 
-1. Admin mengisi formulir data siswa.
-2. Sistem memvalidasi data.
-3. Sistem menyimpan akun pada tabel `users` dan profil siswa pada tabel `students`.
-4. Data ditampilkan pada daftar siswa dan halaman detail.
-5. Siswa yang masih memiliki transaksi tidak dapat dihapus sebelum transaksi tersebut ditangani.
+Hanya dapat mengakses data kelasnya sendiri.
 
-## Pembayaran Siswa
+# Siswa
 
-1. Admin memilih siswa dan mengisi nominal, tanggal, jenis, metode, serta catatan.
-2. Sistem memvalidasi bahwa nominal pembayaran lebih dari Rp0.
-3. Data disimpan pada tabel `transactions`.
-4. Jika ada bukti, informasi file disimpan pada tabel `payment_proofs`.
-5. Sistem menghitung ulang total pembayaran, kekurangan, status, dan saldo saat halaman dibuka.
-6. Tindakan Admin dicatat dalam riwayat aktivitas.
+Hanya dapat melihat pembayaran dan data miliknya sendiri.
 
-## Pemasukan dan Pengeluaran
+# 4. Struktur Data
 
-1. Admin mengisi formulir pemasukan atau pengeluaran.
-2. Data disimpan pada tabel `income` atau `expenses`.
-3. Sistem menggabungkan arus kas untuk menghitung total uang masuk, uang keluar, dan saldo.
-
-## Akses Bukti Pembayaran
-
-1. Pengguna meminta bukti pembayaran.
-2. Sistem memeriksa sesi login.
-3. Admin dapat membuka seluruh bukti; siswa hanya dapat membuka bukti miliknya.
-4. Jika berhak, sistem menampilkan file dari penyimpanan privat.
-
-## Laporan
-
-1. Admin memilih periode laporan.
-2. Sistem membaca transaksi, pemasukan, dan pengeluaran sesuai periode.
-3. Sistem menghitung ringkasan keuangan dan rekap siswa.
-4. Hasil ditampilkan pada halaman laporan atau diekspor ke PDF dan Excel.
-
-# 4. Alur Data
-
-Data utama disimpan dalam tabel berikut:
+Tabel utama:
 
 | Tabel | Fungsi |
 |---|---|
-| `users` | Menyimpan akun, password hash, dan role. |
-| `students` | Menyimpan NIS, kelas, nomor absen, dan target pembayaran. |
+| `profiles` | Menyimpan akun dan role. |
+| `majors` | Menyimpan jurusan. |
+| `classes` | Menyimpan data kelas. |
+| `students` | Menyimpan siswa. |
 | `transactions` | Menyimpan pembayaran siswa. |
-| `income` | Menyimpan pemasukan selain pembayaran siswa. |
-| `expenses` | Menyimpan pengeluaran kelas. |
-| `payment_proofs` | Menyimpan informasi bukti transaksi. |
-| `settings` | Menyimpan pengaturan aplikasi dan kelas. |
-| `activity_logs` | Menyimpan riwayat tindakan penting. |
+| `income` | Menyimpan pemasukan tambahan. |
+| `expenses` | Menyimpan pengeluaran. |
+| `payment_proofs` | Menyimpan bukti pembayaran. |
+| `activity_logs` | Menyimpan aktivitas pengguna. |
 
-Alur data pembayaran:
+# 5. Pemisahan Data Kelas
 
-1. Admin mengisi formulir pembayaran.
-2. Pembayaran disimpan di `transactions`.
-3. Sistem mengambil seluruh pembayaran siswa untuk menghitung total dan status.
-4. Hasil perhitungan ditampilkan pada dashboard, detail siswa, riwayat, dan laporan.
+Setiap data transaksi memiliki `class_id`.
 
-# 5. Input dan Output Sistem
+Contoh:
 
-| Proses | Input | Output |
-|---|---|---|
-| Login | Username/email dan password | Sesi login atau pesan kesalahan. |
-| Data siswa | Nama, NIS, kelas, absen, akun, target | Profil dan daftar siswa. |
-| Pembayaran | Siswa, nominal, tanggal, jenis, metode, catatan, bukti | Riwayat pembayaran dan status terbaru. |
-| Pemasukan | Nama, kategori, nominal, tanggal, catatan | Total pemasukan dan saldo terbaru. |
-| Pengeluaran | Nama, kategori, nominal, tanggal, keperluan | Total pengeluaran dan saldo terbaru. |
-| Laporan | Periode laporan | Rekap keuangan, PDF, Excel, atau tampilan cetak. |
+```text
+XI RPL → class_id XI RPL
+XI DKV 1 → class_id XI DKV 1
+```
 
-# 6. Aturan Perhitungan
+Bendahara hanya dapat membaca data dengan `class_id` miliknya.
 
-- **Total pembayaran siswa** = jumlah seluruh transaksi pembayaran siswa.
-- **Kekurangan** = target pembayaran − total pembayaran. Jika hasilnya negatif, kekurangan ditampilkan Rp0.
-- **Status LUNAS** = total pembayaran siswa sama dengan atau lebih besar daripada target.
-- **Status BELUM LUNAS** = total pembayaran siswa masih di bawah target.
-- **Total pemasukan kelas** = pembayaran siswa + pemasukan tambahan.
-- **Saldo kelas** = total pemasukan kelas − total pengeluaran kelas.
+Admin dapat membaca seluruh `class_id`.
 
-Contoh: target siswa Rp20.000 dan total pembayaran Rp10.000 menghasilkan status BELUM LUNAS dengan kekurangan Rp10.000.
+# 6. Autentikasi
 
-# 7. Persyaratan Keamanan dan Tampilan
+1. Pengguna login menggunakan email dan password.
+2. Supabase Auth memeriksa akun.
+3. Sistem membaca role.
+4. Admin diarahkan ke dashboard Admin.
+5. Bendahara diarahkan ke dashboard kelas.
+6. Siswa diarahkan ke dashboard siswa.
 
-- Password disimpan dalam bentuk hash.
-- Setiap halaman dan proses Admin memeriksa role pada server.
-- Siswa hanya dapat mengakses data miliknya.
-- Form perubahan data memakai perlindungan CSRF.
-- Input divalidasi sebelum disimpan.
-- Bukti pembayaran hanya menerima JPG, JPEG, PNG, atau PDF dengan batas 5 MB.
-- Tampilan menggunakan bahasa Indonesia, format Rupiah, dan responsif pada komputer maupun ponsel.
+# 7. Pembayaran Siswa
 
-# 8. Batas Sistem Saat Ini
+1. Bendahara memilih siswa.
+2. Mengisi nominal, tanggal, metode, dan catatan.
+3. Bukti pembayaran dapat diunggah.
+4. Data disimpan ke `transactions`.
+5. Sistem menghitung total pembayaran dan status secara otomatis.
 
-ClassWallet belum memproses pembayaran melalui bank atau payment gateway. Status LUNAS menunjukkan bahwa nominal target sudah tercapai, bukan bahwa transfer telah diverifikasi otomatis. Sistem saat ini digunakan untuk satu kelas dan belum menyimpan kolom NISN.
+# 8. Perhitungan
+
+- **Total pembayaran** = seluruh transaksi pembayaran siswa.
+- **Kekurangan** = target − total pembayaran.
+- **LUNAS** = total pembayaran ≥ target.
+- **BELUM LUNAS** = total pembayaran < target.
+- **Total pemasukan** = pembayaran siswa + pemasukan tambahan.
+- **Saldo** = pemasukan − pengeluaran.
+
+# 9. Laporan
+
+Admin dapat melihat laporan:
+
+- Per kelas.
+- Per jurusan.
+- Per tingkat.
+- Seluruh sekolah.
+
+Bendahara hanya dapat melihat laporan kelasnya.
+
+# 10. Supabase Storage
+
+Digunakan untuk menyimpan:
+
+- Bukti pembayaran.
+- Foto profil.
+
+Format file:
+
+- JPG
+- JPEG
+- PNG
+- PDF
+
+Maksimal **5 MB**.
+
+# 11. Keamanan
+
+- Password dikelola oleh Supabase Auth.
+- Row Level Security wajib aktif.
+- Bendahara tidak dapat membuka kelas lain.
+- Siswa tidak dapat membuka data siswa lain.
+- Data input harus divalidasi.
+- Aktivitas penting dicatat dalam audit log.
+
+# 12. Struktur Routing
+
+```text
+/login
+
+/admin
+/admin/kelas
+/admin/jurusan
+/admin/bendahara
+/admin/laporan
+
+/bendahara
+/bendahara/siswa
+/bendahara/tabungan
+/bendahara/pemasukan
+/bendahara/pengeluaran
+/bendahara/laporan
+
+/siswa
+/siswa/tabungan
+/siswa/riwayat
+/siswa/profile
+```
+
+# 13. Hasil Akhir Sistem
+
+ClassWallet menggunakan **Next.js dan Supabase** untuk mengelola keuangan **27 kelas**.
+
+Data setiap kelas dipisahkan, Bendahara hanya mengelola kelasnya, siswa hanya melihat datanya sendiri, dan Admin Sekolah dapat melihat laporan seluruh kelas.
